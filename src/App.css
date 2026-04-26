@@ -43,7 +43,7 @@
 }
 
 .page-content {
-  width: min(1120px, calc(100% - 32px));
+  width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
   padding: 30px 0 80px;
 }
@@ -167,7 +167,7 @@
 }
 
 .timer-button {
-  min-width: 150px;
+  min-width: 130px;
 }
 
 .timer-button.button-primary {
@@ -214,7 +214,7 @@
   border-radius: 999px;
   font: inherit;
   cursor: pointer;
-  padding: 0.95rem 1.35rem;
+  padding: 0.75rem 1.15rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -772,6 +772,18 @@ button:focus-visible {
   line-height: 1.3;
 }
 
+.achievement-desc {
+  font-size: 0.67rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.next-achievement-desc {
+  text-align: left;
+  margin-top: -2px;
+}
+
 .achievements-empty {
   padding: 20px;
   text-align: center;
@@ -840,6 +852,10 @@ button:focus-visible {
 @media (max-width: 720px) {
   .app-header {
     align-items: flex-start;
+    padding: 20px 20px 16px;
+  }
+  .page-content {
+    width: min(1120px, calc(100% - 40px));
   }
   .activity-grid,
   .dashboard-metrics {
@@ -850,5 +866,9 @@ button:focus-visible {
   }
   .range-buttons {
     justify-content: flex-start;
+  }
+  .timer-button {
+    min-width: 110px;
+    font-size: 0.88rem;
   }
 }

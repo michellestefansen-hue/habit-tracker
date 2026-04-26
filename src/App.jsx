@@ -33,73 +33,73 @@ const EMOJI_CATEGORY_IDS = Object.keys(EMOJI_CATEGORIES)
 
 const ACHIEVEMENTS = {
   overall: [
-    { id: 'seedling', emoji: '🌱', name: 'Seedling', threshold: 10 },
-    { id: 'green_thumb', emoji: '🌿', name: 'Green Thumb', threshold: 50 },
-    { id: 'oak_tree', emoji: '🌳', name: 'Oak Tree', threshold: 100 },
-    { id: 'mountain_peak', emoji: '🏔️', name: 'Mountain Peak', threshold: 250 },
-    { id: 'explorer', emoji: '🌍', name: 'Explorer', threshold: 500 },
-    { id: 'master', emoji: '👑', name: 'Master', threshold: 1000 },
+    { id: 'seedling', emoji: '🌱', name: 'Seedling', threshold: 10, desc: 'Log your first 10 minutes of practice' },
+    { id: 'green_thumb', emoji: '🌿', name: 'Green Thumb', threshold: 50, desc: 'Accumulate 50 total minutes' },
+    { id: 'oak_tree', emoji: '🌳', name: 'Oak Tree', threshold: 100, desc: 'Clock 100 minutes of total practice' },
+    { id: 'mountain_peak', emoji: '🏔️', name: 'Mountain Peak', threshold: 250, desc: 'Log 250 total minutes' },
+    { id: 'explorer', emoji: '🌍', name: 'Explorer', threshold: 500, desc: 'Dedicate 500 minutes to your habits' },
+    { id: 'master', emoji: '👑', name: 'Master', threshold: 1000, desc: 'Achieve 1000 total minutes of practice' },
   ],
   category: {
     fitness: [
-      { id: 'fitness_25', emoji: '💪', name: 'Breaking Sweat', threshold: 25 },
-      { id: 'fitness_50', emoji: '🏋️', name: 'Iron Discipline', threshold: 50 },
-      { id: 'fitness_100', emoji: '🥇', name: 'Gym Rat', threshold: 100 },
+      { id: 'fitness_25', emoji: '💪', name: 'Breaking Sweat', threshold: 25, desc: 'Log 25 minutes of physical fitness' },
+      { id: 'fitness_50', emoji: '🏋️', name: 'Iron Discipline', threshold: 50, desc: 'Reach 50 minutes of fitness activity' },
+      { id: 'fitness_100', emoji: '🥇', name: 'Gym Rat', threshold: 100, desc: 'Clock 100 minutes of fitness' },
     ],
     wellness: [
-      { id: 'wellness_25', emoji: '🧘', name: 'Finding Stillness', threshold: 25 },
-      { id: 'wellness_50', emoji: '🌬️', name: 'Zen Seeker', threshold: 50 },
-      { id: 'wellness_100', emoji: '💎', name: 'Inner Peace', threshold: 100 },
+      { id: 'wellness_25', emoji: '🧘', name: 'Finding Stillness', threshold: 25, desc: 'Log 25 minutes of mindfulness or wellness' },
+      { id: 'wellness_50', emoji: '🌬️', name: 'Zen Seeker', threshold: 50, desc: 'Reach 50 minutes of wellness practice' },
+      { id: 'wellness_100', emoji: '💎', name: 'Inner Peace', threshold: 100, desc: 'Dedicate 100 minutes to mental wellness' },
     ],
     learning: [
-      { id: 'learning_25', emoji: '📚', name: 'Curious Mind', threshold: 25 },
-      { id: 'learning_50', emoji: '🔬', name: 'Scholar', threshold: 50 },
-      { id: 'learning_100', emoji: '👨‍🎓', name: 'Lifelong Learner', threshold: 100 },
+      { id: 'learning_25', emoji: '📚', name: 'Curious Mind', threshold: 25, desc: 'Log 25 minutes of study or learning' },
+      { id: 'learning_50', emoji: '🔬', name: 'Scholar', threshold: 50, desc: 'Reach 50 minutes of learning' },
+      { id: 'learning_100', emoji: '👨‍🎓', name: 'Lifelong Learner', threshold: 100, desc: 'Clock 100 minutes of learning' },
     ],
     creative: [
-      { id: 'creative_25', emoji: '🎨', name: 'Palette Tinkerer', threshold: 25 },
-      { id: 'creative_50', emoji: '🖌️', name: 'Artist in Progress', threshold: 50 },
-      { id: 'creative_100', emoji: '🎭', name: 'Bob Ross', threshold: 100 },
+      { id: 'creative_25', emoji: '🎨', name: 'Palette Tinkerer', threshold: 25, desc: 'Log 25 minutes of creative arts' },
+      { id: 'creative_50', emoji: '🖌️', name: 'Artist in Progress', threshold: 50, desc: 'Reach 50 minutes of creative practice' },
+      { id: 'creative_100', emoji: '🎭', name: 'Bob Ross', threshold: 100, desc: 'Clock 100 minutes of creative work' },
     ],
     music: [
-      { id: 'music_25', emoji: '🎵', name: 'First Notes', threshold: 25 },
-      { id: 'music_50', emoji: '🎼', name: 'Jam Session', threshold: 50 },
-      { id: 'music_100', emoji: '🎸', name: 'Maestro', threshold: 100 },
+      { id: 'music_25', emoji: '🎵', name: 'First Notes', threshold: 25, desc: 'Log 25 minutes of music practice' },
+      { id: 'music_50', emoji: '🎼', name: 'Jam Session', threshold: 50, desc: 'Reach 50 minutes of music' },
+      { id: 'music_100', emoji: '🎸', name: 'Maestro', threshold: 100, desc: 'Dedicate 100 minutes to music' },
     ],
     cooking: [
-      { id: 'cooking_25', emoji: '👨‍🍳', name: 'Sous Chef', threshold: 25 },
-      { id: 'cooking_50', emoji: '🍽️', name: 'Kitchen Explorer', threshold: 50 },
-      { id: 'cooking_100', emoji: '👨‍🍳', name: 'Gordon Ramsay', threshold: 100 },
+      { id: 'cooking_25', emoji: '👨‍🍳', name: 'Sous Chef', threshold: 25, desc: 'Log 25 minutes in the kitchen' },
+      { id: 'cooking_50', emoji: '🍽️', name: 'Kitchen Explorer', threshold: 50, desc: 'Reach 50 minutes of cooking' },
+      { id: 'cooking_100', emoji: '👨‍🍳', name: 'Gordon Ramsay', threshold: 100, desc: 'Clock 100 minutes of cooking' },
     ],
     home: [
-      { id: 'home_25', emoji: '🏠', name: 'Nester', threshold: 25 },
-      { id: 'home_50', emoji: '🏡', name: 'Homemaker', threshold: 50 },
-      { id: 'home_100', emoji: '🌻', name: 'Sanctuary Keeper', threshold: 100 },
+      { id: 'home_25', emoji: '🏠', name: 'Nester', threshold: 25, desc: 'Log 25 minutes on home and garden' },
+      { id: 'home_50', emoji: '🏡', name: 'Homemaker', threshold: 50, desc: 'Reach 50 minutes of home care' },
+      { id: 'home_100', emoji: '🌻', name: 'Sanctuary Keeper', threshold: 100, desc: 'Dedicate 100 minutes to your home' },
     ],
     nature: [
-      { id: 'nature_25', emoji: '🥾', name: 'Trail Seeker', threshold: 25 },
-      { id: 'nature_50', emoji: '🏕️', name: 'Wanderer', threshold: 50 },
-      { id: 'nature_100', emoji: '🦅', name: 'Nature\'s Child', threshold: 100 },
+      { id: 'nature_25', emoji: '🥾', name: 'Trail Seeker', threshold: 25, desc: 'Log 25 minutes outdoors' },
+      { id: 'nature_50', emoji: '🏕️', name: 'Wanderer', threshold: 50, desc: 'Reach 50 minutes in nature' },
+      { id: 'nature_100', emoji: '🦅', name: "Nature's Child", threshold: 100, desc: 'Clock 100 minutes outdoors' },
     ],
     crafts: [
-      { id: 'crafts_25', emoji: '🧶', name: 'Stitcher', threshold: 25 },
-      { id: 'crafts_50', emoji: '🎀', name: 'Craft Master', threshold: 50 },
-      { id: 'crafts_100', emoji: '🧵', name: 'Renaissance Maker', threshold: 100 },
+      { id: 'crafts_25', emoji: '🧶', name: 'Stitcher', threshold: 25, desc: 'Log 25 minutes of crafting' },
+      { id: 'crafts_50', emoji: '🎀', name: 'Craft Master', threshold: 50, desc: 'Reach 50 minutes of crafts' },
+      { id: 'crafts_100', emoji: '🧵', name: 'Renaissance Maker', threshold: 100, desc: 'Dedicate 100 minutes to crafts and making' },
     ],
     growth: [
-      { id: 'growth_25', emoji: '✍️', name: 'Reflector', threshold: 25 },
-      { id: 'growth_50', emoji: '📖', name: 'Philosopher', threshold: 50 },
-      { id: 'growth_100', emoji: '💭', name: 'Wisdom Keeper', threshold: 100 },
+      { id: 'growth_25', emoji: '✍️', name: 'Reflector', threshold: 25, desc: 'Log 25 minutes of personal reflection' },
+      { id: 'growth_50', emoji: '📖', name: 'Philosopher', threshold: 50, desc: 'Reach 50 minutes of personal growth' },
+      { id: 'growth_100', emoji: '💭', name: 'Wisdom Keeper', threshold: 100, desc: 'Clock 100 minutes of self-development' },
     ],
   },
   streak: [
-    { id: 'week_warrior', emoji: '🔥', name: 'Week Warrior', threshold: 7 },
-    { id: 'month_momentum', emoji: '🌪️', name: 'Month Momentum', threshold: 30 },
-    { id: 'unstoppable', emoji: '⚡', name: 'Unstoppable', threshold: 90 },
+    { id: 'week_warrior', emoji: '🔥', name: 'Week Warrior', threshold: 7, desc: 'Log activity every day for 7 days straight' },
+    { id: 'month_momentum', emoji: '🌪️', name: 'Month Momentum', threshold: 30, desc: 'Maintain a 30-day daily streak' },
+    { id: 'unstoppable', emoji: '⚡', name: 'Unstoppable', threshold: 90, desc: 'Keep a 90-day streak going' },
   ],
   special: [
-    { id: 'balanced_life', emoji: '🎯', name: 'Balanced Life', threshold: 5 },
-    { id: 'renaissance', emoji: '🌈', name: 'Renaissance', threshold: 10 },
+    { id: 'balanced_life', emoji: '🎯', name: 'Balanced Life', threshold: 5, desc: 'Stay active in at least 5 different categories' },
+    { id: 'renaissance', emoji: '🌈', name: 'Renaissance', threshold: 10, desc: 'Explore all 10 activity categories' },
   ],
 }
 
@@ -451,13 +451,15 @@ function AchievementsShowcase({ activities, logs }) {
 
   const nextAchievements = useMemo(() => {
     const next = []
+    const activeCategoryIds = new Set(activities.map((a) => a.category))
 
     // Find next overall
     const nextOverall = ACHIEVEMENTS.overall.find((ach) => calculateTotals.grandTotal < ach.threshold)
     if (nextOverall) next.push({ ...nextOverall, type: 'overall', progress: calculateTotals.grandTotal })
 
-    // Find next category
+    // Find next category — only for categories the user has activities in
     Object.entries(ACHIEVEMENTS.category).forEach(([categoryId, categoryAchs]) => {
+      if (!activeCategoryIds.has(categoryId)) return
       const nextCat = categoryAchs.find((ach) => (calculateTotals.categoryTotals[categoryId] || 0) < ach.threshold)
       if (nextCat && next.length < 3) {
         next.push({ ...nextCat, type: 'category', category: categoryId, progress: calculateTotals.categoryTotals[categoryId] || 0 })
@@ -465,7 +467,7 @@ function AchievementsShowcase({ activities, logs }) {
     })
 
     return next.slice(0, 3)
-  }, [calculateTotals])
+  }, [calculateTotals, activities])
 
   return (
     <section className="dashboard-card achievements-showcase">
@@ -479,6 +481,7 @@ function AchievementsShowcase({ activities, logs }) {
             <div key={ach.id} className="achievement-badge unlocked">
               <span className="achievement-emoji">{ach.emoji}</span>
               <span className="achievement-name">{ach.name}</span>
+              <span className="achievement-desc">{ach.desc}</span>
             </div>
           ))}
         </div>
@@ -500,10 +503,11 @@ function AchievementsShowcase({ activities, logs }) {
                     <span className="achievement-emoji">{ach.emoji}</span>
                     <span className="achievement-name">{ach.name}</span>
                   </div>
+                  <span className="achievement-desc next-achievement-desc">{ach.desc}</span>
                   <div className="progress-bar">
                     <div className="progress-fill" style={{ width: `${progress}%` }} />
                   </div>
-                  <span className="progress-text">{ach.progress}h / {ach.threshold}h</span>
+                  <span className="progress-text">{ach.progress > 0 ? formatMinutes(ach.progress) : '0m'} / {formatMinutes(ach.threshold)}</span>
                 </div>
               )
             })}
@@ -635,7 +639,7 @@ function App() {
         <div>
           <p className="eyebrow">Daily practice</p>
           <h1>Habit Tracker</h1>
-          <p className="subhead">Build a quieter rhythm by tracking minutes spent on the things that matter.</p>
+          <p className="subhead">Outliers aren't born - they're built daily.</p>
         </div>
         <button type="button" className="button button-primary" onClick={() => setShowModal(true)}>
           + Add activity
