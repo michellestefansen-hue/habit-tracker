@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 
 const STORAGE_KEY = 'habit-tracker-state-v1'
@@ -32,14 +32,6 @@ const EMOJI_CATEGORIES = {
 const EMOJI_CATEGORY_IDS = Object.keys(EMOJI_CATEGORIES)
 
 const ACHIEVEMENTS = {
-  overall: [
-    { id: 'seedling', emoji: '🌱', name: 'Seedling', threshold: 10, desc: 'Log your first 10 minutes of practice' },
-    { id: 'green_thumb', emoji: '🌿', name: 'Green Thumb', threshold: 50, desc: 'Accumulate 50 total minutes' },
-    { id: 'oak_tree', emoji: '🌳', name: 'Oak Tree', threshold: 100, desc: 'Clock 100 minutes of total practice' },
-    { id: 'mountain_peak', emoji: '🏔️', name: 'Mountain Peak', threshold: 250, desc: 'Log 250 total minutes' },
-    { id: 'explorer', emoji: '🌍', name: 'Explorer', threshold: 500, desc: 'Dedicate 500 minutes to your habits' },
-    { id: 'master', emoji: '👑', name: 'Master', threshold: 1000, desc: 'Achieve 1000 total minutes of practice' },
-  ],
   category: {
     fitness: [
       { id: 'fitness_5h', emoji: '💪', name: 'First Rep', threshold: 300, desc: 'Log your first 5 hours of fitness' },
@@ -412,7 +404,6 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop 
 function AchievementsShowcase({ activities, logs }) {
   const calculateTotals = useMemo(() => {
     const allDay = {}
-    let grandTotal = 0
     const categoryTotals = {}
 
     activities.forEach((activity) => {
@@ -423,7 +414,6 @@ function AchievementsShowcase({ activities, logs }) {
       Object.entries(activityLogs).forEach(([day, minutes]) => {
         allDay[day] = (allDay[day] || 0) + minutes
       })
-      grandTotal += activityTotal
     })
 
     const daysWithLogs = Object.keys(allDay).filter((k) => allDay[k] > 0)
@@ -437,18 +427,11 @@ function AchievementsShowcase({ activities, logs }) {
     const categoriesActive = Object.values(categoryTotals).filter((total) => total > 0).length
     const allCategoriesActive = categoriesActive === EMOJI_CATEGORY_IDS.length
 
-    return { grandTotal, categoryTotals, streak, daysWithLogs: daysWithLogs.length, categoriesActive, allCategoriesActive }
+    return { categoryTotals, streak, daysWithLogs: daysWithLogs.length, categoriesActive, allCategoriesActive }
   }, [activities, logs])
 
   const unlockedAchievements = useMemo(() => {
     const unlocked = []
-
-    // Overall achievements
-    ACHIEVEMENTS.overall.forEach((ach) => {
-      if (calculateTotals.grandTotal >= ach.threshold) {
-        unlocked.push({ ...ach, type: 'overall' })
-      }
-    })
 
     // Category achievements
     Object.entries(ACHIEVEMENTS.category).forEach(([categoryId, categoryAchs]) => {
@@ -482,10 +465,6 @@ function AchievementsShowcase({ activities, logs }) {
   const nextAchievements = useMemo(() => {
     const next = []
     const activeCategoryIds = new Set(activities.map((a) => a.category))
-
-    // Find next overall
-    const nextOverall = ACHIEVEMENTS.overall.find((ach) => calculateTotals.grandTotal < ach.threshold)
-    if (nextOverall) next.push({ ...nextOverall, type: 'overall', progress: calculateTotals.grandTotal })
 
     // Find next category — only for categories the user has activities in
     Object.entries(ACHIEVEMENTS.category).forEach(([categoryId, categoryAchs]) => {
@@ -544,6 +523,204 @@ function AchievementsShowcase({ activities, logs }) {
           </div>
         </div>
       )}
+    </section>
+  )
+}
+
+function ActivityLineChart({ activities, logs }) {
+  const [range, setRange] = useState(30)
+  const [hiddenIds, setHiddenIds] = useState(new Set())
+  const [hoverIndex, setHoverIndex] = useState(null)
+  const svgRef = useRef(null)
+
+  const W = 600, H = 160
+  const PAD = { top: 12, right: 16, bottom: 28, left: 44 }
+  const innerW = W - PAD.left - PAD.right
+  const innerH = H - PAD.top - PAD.bottom
+
+  const days = useMemo(() =>
+    Array.from({ length: range }).map((_, i) => {
+      const date = subtractDays(range - 1 - i)
+      return { key: dateKey(date), date }
+    }), [range])
+
+  const series = useMemo(() =>
+    activities.map(activity => {
+      const swatch = SWATCHES.find(s => s.id === activity.color) ?? SWATCHES[0]
+      return {
+        id: activity.id,
+        name: activity.name,
+        emoji: activity.emoji,
+        color: swatch.heat,
+        data: days.map(d => logs[activity.id]?.[d.key] || 0),
+      }
+    }), [activities, logs, days])
+
+  const visibleSeries = useMemo(() =>
+    series.filter(s => !hiddenIds.has(s.id)), [series, hiddenIds])
+
+  const maxVal = useMemo(() =>
+    Math.max(60, ...visibleSeries.flatMap(s => s.data)), [visibleSeries])
+
+  const xPos = (i) => PAD.left + (days.length > 1 ? (i / (days.length - 1)) * innerW : innerW / 2)
+  const yPos = (v) => PAD.top + innerH - (v / maxVal) * innerH
+
+  function buildPath(data) {
+    return data.map((v, i) => `${i === 0 ? 'M' : 'L'}${xPos(i).toFixed(1)},${yPos(v).toFixed(1)}`).join(' ')
+  }
+
+  const labelIndices = useMemo(() => {
+    if (range === 7) return [0, 1, 2, 3, 4, 5, 6]
+    if (range === 30) return [0, 6, 13, 20, 29]
+    return [0, 14, 29, 44, 59, 74, 89]
+  }, [range])
+
+  const yTicks = [0, 0.5, 1].map(f => ({
+    value: Math.round(maxVal * f),
+    y: yPos(maxVal * f),
+  }))
+
+  function handleMouseMove(e) {
+    const svg = svgRef.current
+    if (!svg) return
+    const rect = svg.getBoundingClientRect()
+    const svgX = ((e.clientX - rect.left) / rect.width) * W
+    const i = Math.round(((svgX - PAD.left) / innerW) * (days.length - 1))
+    setHoverIndex(Math.max(0, Math.min(days.length - 1, i)))
+  }
+
+  function toggleActivity(id) {
+    setHiddenIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const tooltipX = hoverIndex !== null ? xPos(hoverIndex) : null
+  const tooltipLeftPercent = tooltipX !== null ? Math.max(8, Math.min(92, (tooltipX / W) * 100)) : null
+
+  return (
+    <section className="dashboard-card line-chart-card">
+      <div className="line-chart-header">
+        <h3>Activity over time</h3>
+        <div className="range-buttons">
+          {[7, 30, 90].map(r => (
+            <button
+              key={r}
+              type="button"
+              className={`range-button ${range === r ? 'active' : ''}`}
+              onClick={() => setRange(r)}
+            >
+              {r}d
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="activity-chips">
+        {series.map(s => (
+          <button
+            key={s.id}
+            type="button"
+            className={`activity-chip ${hiddenIds.has(s.id) ? 'chip-hidden' : ''}`}
+            onClick={() => toggleActivity(s.id)}
+          >
+            <span className="chip-dot" style={{ background: s.color }} />
+            {s.emoji} {s.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="svg-wrapper" onMouseLeave={() => setHoverIndex(null)}>
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${W} ${H}`}
+          width="100%"
+          height={H}
+          preserveAspectRatio="none"
+          className="line-chart-svg"
+          onMouseMove={handleMouseMove}
+        >
+          {yTicks.map(tick => (
+            <g key={tick.value}>
+              <line
+                x1={PAD.left} y1={tick.y.toFixed(1)}
+                x2={W - PAD.right} y2={tick.y.toFixed(1)}
+                stroke="var(--border)" strokeWidth="1"
+              />
+              <text
+                x={PAD.left - 6} y={tick.y.toFixed(1)}
+                textAnchor="end" dominantBaseline="middle"
+                fontSize="10" fill="var(--muted)"
+              >
+                {tick.value === 0 ? '0' : formatMinutes(tick.value)}
+              </text>
+            </g>
+          ))}
+
+          {labelIndices.map(i => (
+            <text
+              key={i}
+              x={xPos(i).toFixed(1)} y={H - PAD.bottom + 14}
+              textAnchor="middle" fontSize="10" fill="var(--muted)"
+            >
+              {days[i]?.date.toLocaleDateString('no-NO', { month: 'short', day: 'numeric' })}
+            </text>
+          ))}
+
+          {visibleSeries.map(s => (
+            <path
+              key={s.id}
+              d={buildPath(s.data)}
+              fill="none"
+              stroke={s.color}
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          ))}
+
+          {hoverIndex !== null && (
+            <>
+              <line
+                x1={tooltipX.toFixed(1)} y1={PAD.top}
+                x2={tooltipX.toFixed(1)} y2={PAD.top + innerH}
+                stroke="var(--border)" strokeWidth="1.5" strokeDasharray="4 3"
+              />
+              {visibleSeries.map(s => (
+                <circle
+                  key={s.id}
+                  cx={tooltipX.toFixed(1)}
+                  cy={yPos(s.data[hoverIndex]).toFixed(1)}
+                  r="4"
+                  fill={s.color}
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+              ))}
+            </>
+          )}
+        </svg>
+
+        {hoverIndex !== null && (
+          <div className="chart-tooltip" style={{ left: `${tooltipLeftPercent}%` }}>
+            <div className="tooltip-date">
+              {days[hoverIndex]?.date.toLocaleDateString('no-NO', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </div>
+            {visibleSeries.filter(s => s.data[hoverIndex] > 0).map(s => (
+              <div key={s.id} className="tooltip-row">
+                <span className="tooltip-dot" style={{ background: s.color }} />
+                <span>{s.name}: {formatMinutes(s.data[hoverIndex])}</span>
+              </div>
+            ))}
+            {visibleSeries.every(s => s.data[hoverIndex] === 0) && (
+              <div className="tooltip-row tooltip-empty">Ingen aktivitet</div>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   )
 }
@@ -695,6 +872,7 @@ function App() {
                 />
               ))}
             </div>
+            <ActivityLineChart activities={sortedActivities} logs={logs} />
             <div className="section-stack">
               <AchievementsShowcase activities={sortedActivities} logs={logs} />
             </div>
