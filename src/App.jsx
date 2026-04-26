@@ -311,7 +311,8 @@ function WeeklyInsightGraph({ logs, color }) {
   })
   const totalMinutes = days.reduce((sum, day) => sum + day.minutes, 0)
   const maxStep = Math.max(1, ...days.map((day) => Math.max(day.minutes, 10)))
-  const avgMinutes = Math.round(totalMinutes / 7)
+  const activeDays = days.filter(day => day.minutes > 0).length
+  const avgMinutes = activeDays > 0 ? Math.round(totalMinutes / activeDays) : 0
 
   return (
     <div className="weekly-insight">
