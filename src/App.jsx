@@ -106,6 +106,14 @@ function AddModal({ onAdd, onClose }) {
   const [swatchId, setSwatchId] = useState(SWATCHES[0].id)
   const [categoryId, setCategoryId] = useState(EMOJI_CATEGORY_IDS[0])
 
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   function handleSubmit(event) {
     event.preventDefault()
     if (!name.trim()) return
@@ -320,6 +328,17 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop,
   }
 
   const sortedEditDays = Object.keys(editedLogs).sort((a, b) => b.localeCompare(a))
+
+  useEffect(() => {
+    if (!confirmingDelete && !showEditModal) return
+    function handleKeyDown(e) {
+      if (e.key !== 'Escape') return
+      if (confirmingDelete) setConfirmingDelete(false)
+      if (showEditModal) setShowEditModal(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [confirmingDelete, showEditModal])
 
   return (
     <article className={`activity-card ${isRunning ? 'timer-active' : ''}`} style={{ borderColor: isRunning ? swatch.heat : 'var(--border)' }}>
@@ -860,12 +879,12 @@ function App() {
     writeStoredState({ activities, logs, notes, activeTimer })
   }, [activities, logs, notes, activeTimer, loaded])
 
-  function logTime(activityId, date, minutes) {
-    setLogs((previousLogs) => ({
-      ...previousLogs,
+  function logTime(activityId, date, elapsedMinutes) {
+    setLogs((prev) => ({
+      ...prev,
       [activityId]: {
-        ...(previousLogs[activityId] || {}),
-        [date]: Math.max(0, minutes),
+        ...(prev[activityId] || {}),
+        [date]: Math.max(0, (prev[activityId]?.[date] || 0) + elapsedMinutes),
       },
     }))
   }
@@ -875,7 +894,7 @@ function App() {
     const elapsedSeconds = Math.max(0, Math.floor((Date.now() - activeTimer.startAt) / 1000))
     if (elapsedSeconds >= 60) {
       const minutes = Math.round(elapsedSeconds / 60)
-      logTime(activeTimer.activityId, dateKey(), (logs[activeTimer.activityId]?.[dateKey()] || 0) + minutes)
+      logTime(activeTimer.activityId, dateKey(), minutes)
     }
     setActiveTimer(null)
   }
