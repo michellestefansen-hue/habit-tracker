@@ -136,6 +136,7 @@ function AddModal({ onAdd, onClose }) {
               className="pill-input"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); event.target.blur() } }}
               placeholder="e.g. Piano practice, Weekend cooking"
               autoFocus
             />
@@ -146,6 +147,7 @@ function AddModal({ onAdd, onClose }) {
               className="pill-input"
               value={why}
               onChange={(event) => setWhy(event.target.value)}
+              onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); event.target.blur() } }}
               placeholder="e.g. To feel more grounded at home"
             />
           </label>
@@ -254,8 +256,8 @@ function WeeklyInsightGraph({ logs, color, allTimeTotal }) {
 }
 
 function formatDateNorwegian(key) {
-  const [year, month, day] = key.split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short', year: 'numeric' })
+  const [year, month, day] = key.split('-')
+  return `${day}.${month}.${year.slice(2)}`
 }
 
 function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop, onDelete, onUpdateLogs }) {
@@ -274,7 +276,7 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop,
   const formattedElapsed = isRunning ? formatTimer(elapsedSeconds) : '00:00'
 
   function openEditModal() {
-    setEditedLogs({ ...activityLogs })
+    setEditedLogs(Object.fromEntries(Object.entries(activityLogs).map(([k, v]) => [k, String(v)])))
     setNewDate(today)
     setNewMinutes('')
     setShowEditModal(true)
@@ -287,8 +289,7 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop,
   }
 
   function handleEditMinutes(key, value) {
-    const minutes = parseInt(value, 10)
-    setEditedLogs((prev) => ({ ...prev, [key]: isNaN(minutes) ? 0 : minutes }))
+    setEditedLogs((prev) => ({ ...prev, [key]: value }))
   }
 
   function handleRemoveDay(key) {
@@ -303,22 +304,22 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop,
     if (!newDate || !newMinutes) return
     const minutes = parseInt(newMinutes, 10)
     if (isNaN(minutes) || minutes <= 0) return
-    setEditedLogs((prev) => ({ ...prev, [newDate]: minutes }))
+    setEditedLogs((prev) => ({ ...prev, [newDate]: String(minutes) }))
     setNewDate(today)
     setNewMinutes('')
   }
 
   function handleSaveLogs() {
     const cleaned = Object.fromEntries(
-      Object.entries(editedLogs).filter(([, v]) => v > 0)
+      Object.entries(editedLogs)
+        .map(([k, v]) => [k, parseInt(v, 10)])
+        .filter(([, v]) => !isNaN(v) && v > 0)
     )
     onUpdateLogs(activity.id, cleaned)
     setShowEditModal(false)
   }
 
-  const sortedEditDays = Object.keys(editedLogs)
-    .filter((key) => editedLogs[key] > 0)
-    .sort((a, b) => b.localeCompare(a))
+  const sortedEditDays = Object.keys(editedLogs).sort((a, b) => b.localeCompare(a))
 
   return (
     <article className={`activity-card ${isRunning ? 'timer-active' : ''}`} style={{ borderColor: isRunning ? swatch.heat : 'var(--border)' }}>
@@ -440,7 +441,7 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop,
 
             <div className="edit-logs-add">
               <span className="meta-label">Legg til dag</span>
-              {newDate && editedLogs[newDate] > 0 && (
+              {newDate && parseInt(editedLogs[newDate], 10) > 0 && (
                 <p className="edit-logs-overwrite-warning">
                   OBS: {formatDateNorwegian(newDate)} har allerede {editedLogs[newDate]} min — verdien blir overskrevet.
                 </p>
