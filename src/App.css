@@ -119,6 +119,152 @@
   line-height: 1.55;
 }
 
+.activity-card-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-menu-wrapper {
+  position: relative;
+}
+
+.card-menu-button {
+  padding: 0.5rem 0.85rem;
+}
+
+.card-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+}
+
+.card-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 10;
+  min-width: 140px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--text-heading);
+  text-align: left;
+}
+
+.card-menu-item:hover {
+  background: var(--surface-muted);
+}
+
+.card-menu-item.danger {
+  color: var(--danger);
+}
+
+.edit-logs-dialog {
+  width: min(500px, 100%);
+}
+
+.edit-logs-list {
+  margin-top: 20px;
+  display: grid;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.edit-logs-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.edit-logs-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-logs-date {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-heading);
+}
+
+.edit-logs-input-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.edit-logs-input {
+  width: 72px;
+  padding: 0.4rem 0.7rem;
+  text-align: right;
+}
+
+.edit-logs-unit {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.edit-logs-remove {
+  font-size: 1.1rem;
+  color: var(--muted);
+  padding: 4px 8px;
+}
+
+.edit-logs-remove:hover {
+  color: var(--danger);
+}
+
+.edit-logs-add {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.edit-logs-overwrite-warning {
+  font-size: 0.82rem;
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+.edit-logs-dialog .modal-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.edit-logs-add-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.edit-logs-date-input {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.4rem 0.8rem;
+}
+
 .activity-total {
   text-align: right;
 }
@@ -251,6 +397,24 @@ button:focus-visible {
   line-height: 1;
   padding: 8px;
   border-radius: 12px;
+}
+
+
+
+.delete-dialog {
+  width: min(400px, 100%);
+}
+
+.delete-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  color: var(--text-heading);
+}
+
+.delete-dialog p {
+  margin: 0 0 24px;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .dashboard-card {

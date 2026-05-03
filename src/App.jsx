@@ -1,35 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
-
-const STORAGE_KEY = 'habit-tracker-state-v1'
-
-const SWATCHES = [
-  { id: 'rose', bg: 'oklch(75% 0.07 10)', heat: 'oklch(65% 0.12 10)' },
-  { id: 'clay', bg: 'oklch(68% 0.09 38)', heat: 'oklch(55% 0.12 38)' },
-  { id: 'amber', bg: 'oklch(76% 0.09 68)', heat: 'oklch(64% 0.13 68)' },
-  { id: 'sage', bg: 'oklch(68% 0.07 150)', heat: 'oklch(55% 0.1 150)' },
-  { id: 'moss', bg: 'oklch(60% 0.08 130)', heat: 'oklch(48% 0.11 130)' },
-  { id: 'slate', bg: 'oklch(62% 0.05 220)', heat: 'oklch(50% 0.08 220)' },
-  { id: 'dusk', bg: 'oklch(66% 0.06 270)', heat: 'oklch(54% 0.09 270)' },
-  { id: 'plum', bg: 'oklch(60% 0.08 320)', heat: 'oklch(48% 0.12 320)' },
-  { id: 'sand', bg: 'oklch(80% 0.06 80)', heat: 'oklch(68% 0.09 80)' },
-  { id: 'stone', bg: 'oklch(58% 0.03 60)', heat: 'oklch(42% 0.05 60)' },
-]
-
-const EMOJI_CATEGORIES = {
-  fitness: { label: 'Physical Fitness', emoji: '💪' },
-  wellness: { label: 'Mental Wellness', emoji: '🧘' },
-  learning: { label: 'Learning & Study', emoji: '📖' },
-  creative: { label: 'Creative Arts', emoji: '🎨' },
-  music: { label: 'Music & Sound', emoji: '🎸' },
-  cooking: { label: 'Cooking & Food', emoji: '🍳' },
-  home: { label: 'Home & Garden', emoji: '🏡' },
-  nature: { label: 'Nature & Outdoors', emoji: '🌊' },
-  crafts: { label: 'Crafts & Making', emoji: '🧵' },
-  growth: { label: 'Personal Growth', emoji: '✏️' },
-}
-
-const EMOJI_CATEGORY_IDS = Object.keys(EMOJI_CATEGORIES)
+import { SWATCHES } from './constants/colors.js'
+import { EMOJI_CATEGORIES, EMOJI_CATEGORY_IDS } from './constants/categories.js'
+import { dateKey, subtractDays, formatMinutes, formatTimer } from './utils/date.js'
+import { readStoredState, writeStoredState } from './utils/storage.js'
 
 const ACHIEVEMENTS = {
   category: {
@@ -125,81 +99,6 @@ const ACHIEVEMENTS = {
   ],
 }
 
-function pad2(value) {
-  return String(value).padStart(2, '0')
-}
-
-function dateKey(date = new Date()) {
-  const d = new Date(date)
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
-}
-
-function weekKey(date = new Date()) {
-  const d = new Date(date)
-  const day = d.getDay()
-  const offset = (day + 6) % 7
-  d.setDate(d.getDate() - offset)
-  return dateKey(d)
-}
-
-function subtractDays(count) {
-  const d = new Date()
-  d.setDate(d.getDate() - count)
-  return d
-}
-
-function formatMinutes(total) {
-  if (!total) return '—'
-  if (total < 60) return `${total}m`
-  const hours = Math.floor(total / 60)
-  const remainder = total % 60
-  return remainder ? `${hours}h ${remainder}m` : `${hours}h`
-}
-
-function formatTimer(seconds) {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const remainder = seconds % 60
-  if (hours > 0) return `${hours}:${pad2(minutes)}:${pad2(remainder)}`
-  return `${pad2(minutes)}:${pad2(remainder)}`
-}
-
-async function readStoredState() {
-  if (typeof window === 'undefined') return null
-  try {
-    if (window.storage?.local?.get) {
-      const data = await window.storage.local.get([STORAGE_KEY])
-      return data?.[STORAGE_KEY] ?? null
-    }
-  } catch {
-    // ignore and fallback
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
-async function writeStoredState(state) {
-  if (typeof window === 'undefined') return
-  try {
-    if (window.storage?.local?.set) {
-      await window.storage.local.set({ [STORAGE_KEY]: state })
-      return
-    }
-  } catch {
-    // ignore and fallback
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  } catch {
-    // ignore
-  }
-}
 
 function AddModal({ onAdd, onClose }) {
   const [name, setName] = useState('')
@@ -303,7 +202,7 @@ function AddModal({ onAdd, onClose }) {
   )
 }
 
-function WeeklyInsightGraph({ logs, color }) {
+function WeeklyInsightGraph({ logs, color, allTimeTotal }) {
   const days = Array.from({ length: 7 }).map((_, index) => {
     const date = subtractDays(6 - index)
     const key = dateKey(date)
@@ -345,18 +244,81 @@ function WeeklyInsightGraph({ logs, color }) {
           <span className="meta-label">Avg / day</span>
           <strong>{formatMinutes(avgMinutes)}</strong>
         </div>
+        <div>
+          <span className="meta-label">Total</span>
+          <strong style={{ color: color }}>{formatMinutes(allTimeTotal)}</strong>
+        </div>
       </div>
     </div>
   )
 }
 
-function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop }) {
+function formatDateNorwegian(key) {
+  const [year, month, day] = key.split('-').map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop, onDelete, onUpdateLogs }) {
+  const [showMenu, setShowMenu] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editedLogs, setEditedLogs] = useState({})
+  const [newDate, setNewDate] = useState('')
+  const [newMinutes, setNewMinutes] = useState('')
+
   const today = dateKey()
   const todayMinutes = activityLogs[today] || 0
-  const totalMinutes = Object.values(activityLogs).reduce((sum, value) => sum + value, 0)
+  const allTimeTotal = Object.values(activityLogs).reduce((sum, value) => sum + value, 0)
   const swatch = SWATCHES.find((swatch) => swatch.id === activity.color) ?? SWATCHES[0]
   const elapsedSeconds = isRunning ? Math.max(0, Math.floor((now - activity.timerStart) / 1000)) : 0
   const formattedElapsed = isRunning ? formatTimer(elapsedSeconds) : '00:00'
+
+  function openEditModal() {
+    setEditedLogs({ ...activityLogs })
+    setNewDate(today)
+    setNewMinutes('')
+    setShowEditModal(true)
+    setShowMenu(false)
+  }
+
+  function openDeleteModal() {
+    setConfirmingDelete(true)
+    setShowMenu(false)
+  }
+
+  function handleEditMinutes(key, value) {
+    const minutes = parseInt(value, 10)
+    setEditedLogs((prev) => ({ ...prev, [key]: isNaN(minutes) ? 0 : minutes }))
+  }
+
+  function handleRemoveDay(key) {
+    setEditedLogs((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
+  function handleAddDay() {
+    if (!newDate || !newMinutes) return
+    const minutes = parseInt(newMinutes, 10)
+    if (isNaN(minutes) || minutes <= 0) return
+    setEditedLogs((prev) => ({ ...prev, [newDate]: minutes }))
+    setNewDate(today)
+    setNewMinutes('')
+  }
+
+  function handleSaveLogs() {
+    const cleaned = Object.fromEntries(
+      Object.entries(editedLogs).filter(([, v]) => v > 0)
+    )
+    onUpdateLogs(activity.id, cleaned)
+    setShowEditModal(false)
+  }
+
+  const sortedEditDays = Object.keys(editedLogs)
+    .filter((key) => editedLogs[key] > 0)
+    .sort((a, b) => b.localeCompare(a))
 
   return (
     <article className={`activity-card ${isRunning ? 'timer-active' : ''}`} style={{ borderColor: isRunning ? swatch.heat : 'var(--border)' }}>
@@ -370,9 +332,41 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop 
             {activity.why ? <div className="activity-why">{activity.why}</div> : null}
           </div>
         </div>
-        <div className="activity-total">
-          <span className="meta-label">Total</span>
-          <span className="meta-value" style={{ color: swatch.heat }}>{formatMinutes(totalMinutes)}</span>
+        <div className="activity-card-actions">
+          <div className="card-menu-wrapper">
+            <button
+              type="button"
+              className="button button-secondary card-menu-button"
+              onClick={() => setShowMenu((v) => !v)}
+              aria-label="Alternativer"
+            >
+              <svg width="16" height="4" viewBox="0 0 16 4" fill="currentColor" aria-hidden="true">
+                <circle cx="2" cy="2" r="1.5" />
+                <circle cx="8" cy="2" r="1.5" />
+                <circle cx="14" cy="2" r="1.5" />
+              </svg>
+            </button>
+            {showMenu && (
+              <>
+                <div className="card-menu-backdrop" onClick={() => setShowMenu(false)} />
+                <div className="card-menu">
+                  <button type="button" className="card-menu-item" onClick={openEditModal}>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M11.5 1.5a1.5 1.5 0 0 1 2.12 2.12L5 12.25l-3 .75.75-3L11.5 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Rediger
+                  </button>
+                  <button type="button" className="card-menu-item danger" onClick={openDeleteModal}>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M6 2h4a1 1 0 0 1 1 1H5a1 1 0 0 1 1-1Z" fill="currentColor" />
+                      <path d="M2 4h12v1H3.5l.8 8.1A1 1 0 0 0 5.3 14h5.4a1 1 0 0 0 1-.9L12.5 5H14V4H2Z" fill="currentColor" />
+                    </svg>
+                    Slett
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
       <div className="timer-panel">
@@ -397,7 +391,90 @@ function ActivityCard({ activity, activityLogs, isRunning, now, onStart, onStop 
           <div className="meta-value">{formatMinutes(todayMinutes)}</div>
         </div>
       </div>
-      <WeeklyInsightGraph logs={activityLogs} color={swatch.heat} />
+      <WeeklyInsightGraph logs={activityLogs} color={swatch.heat} allTimeTotal={allTimeTotal} />
+
+      {confirmingDelete && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setConfirmingDelete(false) }}>
+          <div className="modal-card delete-dialog">
+            <h2>Slett aktivitet</h2>
+            <p>Er du sikker på at du vil slette <strong>{activity.name}</strong>? All logget tid vil gå tapt.</p>
+            <div className="modal-actions">
+              <button type="button" className="button button-secondary" onClick={() => setConfirmingDelete(false)}>Avbryt</button>
+              <button type="button" className="button button-stop" onClick={() => onDelete(activity.id)}>Slett</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false) }}>
+          <div className="modal-card edit-logs-dialog">
+            <div className="modal-header">
+              <div>
+                <h2>Rediger tider</h2>
+                <p>{activity.name}</p>
+              </div>
+            </div>
+
+            <div className="edit-logs-list">
+              {sortedEditDays.length === 0 && (
+                <p className="edit-logs-empty">Ingen registrerte dager ennå.</p>
+              )}
+              {sortedEditDays.map((key) => (
+                <div key={key} className="edit-logs-row">
+                  <span className="edit-logs-date">{formatDateNorwegian(key)}</span>
+                  <div className="edit-logs-input-group">
+                    <input
+                      type="number"
+                      className="pill-input edit-logs-input"
+                      min="1"
+                      value={editedLogs[key]}
+                      onChange={(e) => handleEditMinutes(key, e.target.value)}
+                    />
+                    <span className="edit-logs-unit">min</span>
+                  </div>
+                  <button type="button" className="icon-button edit-logs-remove" onClick={() => handleRemoveDay(key)} aria-label="Fjern dag">×</button>
+                </div>
+              ))}
+            </div>
+
+            <div className="edit-logs-add">
+              <span className="meta-label">Legg til dag</span>
+              {newDate && editedLogs[newDate] > 0 && (
+                <p className="edit-logs-overwrite-warning">
+                  OBS: {formatDateNorwegian(newDate)} har allerede {editedLogs[newDate]} min — verdien blir overskrevet.
+                </p>
+              )}
+              <div className="edit-logs-add-row">
+                <input
+                  type="date"
+                  className="pill-input edit-logs-date-input"
+                  value={newDate}
+                  max={today}
+                  onChange={(e) => setNewDate(e.target.value)}
+                />
+                <div className="edit-logs-input-group">
+                  <input
+                    type="number"
+                    className="pill-input edit-logs-input"
+                    min="1"
+                    placeholder="min"
+                    value={newMinutes}
+                    onChange={(e) => setNewMinutes(e.target.value)}
+                  />
+                  <span className="edit-logs-unit">min</span>
+                </div>
+                <button type="button" className="button button-secondary" onClick={handleAddDay}>Legg til</button>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="button button-secondary" onClick={() => setShowEditModal(false)}>Avbryt</button>
+              <button type="button" className="button button-primary" onClick={handleSaveLogs}>Lagre</button>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   )
 }
@@ -815,8 +892,11 @@ function App() {
     setShowModal(false)
   }
 
+  function updateLogs(activityId, newLogs) {
+    setLogs((prev) => ({ ...prev, [activityId]: newLogs }))
+  }
+
   function deleteActivity(activityId) {
-    if (!window.confirm('Remove this activity? Your logged time will be lost.')) return
     setActivities((prev) => prev.filter((activity) => activity.id !== activityId))
     setLogs((prev) => {
       const next = { ...prev }
@@ -870,6 +950,7 @@ function App() {
                   onStart={startTimer}
                   onStop={stopTimer}
                   onDelete={deleteActivity}
+                  onUpdateLogs={updateLogs}
                 />
               ))}
             </div>
