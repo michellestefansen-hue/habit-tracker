@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#3b0764"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5f0ff"/>
+      <stop offset="100%" stop-color="#e0d4ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+
+  <!-- Subtle shine -->
+  <ellipse cx="190" cy="140" rx="120" ry="60" fill="white" opacity="0.06"/>
+
+  <!-- Crown (top connector) -->
+  <rect x="224" y="95" width="64" height="36" rx="12" fill="white" opacity="0.9"/>
+
+  <!-- Left button -->
+  <rect x="152" y="108" width="48" height="22" rx="11" fill="white" opacity="0.85" transform="rotate(-35 176 119)"/>
+
+  <!-- Right button -->
+  <rect x="312" y="108" width="48" height="22" rx="11" fill="white" opacity="0.85" transform="rotate(35 336 119)"/>
+
+  <!-- Watch body outer ring -->
+  <circle cx="256" cy="315" r="172" fill="white" opacity="0.12"/>
+
+  <!-- Watch body -->
+  <circle cx="256" cy="315" r="158" fill="url(#face)"/>
+
+  <!-- Watch body inner shadow ring -->
+  <circle cx="256" cy="315" r="158" fill="none" stroke="white" stroke-width="10" opacity="0.8"/>
+
+  <!-- Subtle bezel -->
+  <circle cx="256" cy="315" r="148" fill="none" stroke="#c4b5fd" stroke-width="2" opacity="0.5"/>
+
+  <!-- Tick marks at 12, 3, 6, 9 -->
+  <line x1="256" y1="177" x2="256" y2="197" stroke="#7c3aed" stroke-width="7" stroke-linecap="round"/>
+  <line x1="394" y1="315" x2="374" y2="315" stroke="#7c3aed" stroke-width="7" stroke-linecap="round"/>
+  <line x1="256" y1="453" x2="256" y2="433" stroke="#7c3aed" stroke-width="7" stroke-linecap="round"/>
+  <line x1="118" y1="315" x2="138" y2="315" stroke="#7c3aed" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Smaller tick marks -->
+  <line x1="325" y1="181" x2="320" y2="189" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="383" y1="239" x2="375" y2="244" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="383" y1="391" x2="375" y2="386" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="325" y1="449" x2="320" y2="441" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="187" y1="449" x2="192" y2="441" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="129" y1="391" x2="137" y2="386" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="129" y1="239" x2="137" y2="244" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="187" y1="181" x2="192" y2="189" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Minute hand (pointing to ~12) -->
+  <line x1="256" y1="315" x2="256" y2="205" stroke="#4c1d95" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Second hand (pointing to ~2 o'clock) -->
+  <line x1="256" y1="315" x2="320" y2="240" stroke="#7c3aed" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Red sweep hand tip -->
+  <line x1="256" y1="315" x2="325" y2="238" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+  <!-- Counter-balance -->
+  <line x1="256" y1="315" x2="230" y2="350" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Center dot -->
+  <circle cx="256" cy="315" r="12" fill="#4c1d95"/>
+  <circle cx="256" cy="315" r="6" fill="white" opacity="0.7"/>
+</svg>
